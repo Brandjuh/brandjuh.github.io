@@ -1,7 +1,6 @@
 {
   "name": "vop-tracker",
   "version": "0.1.0",
-  "author": "Roel on the ramp",
   "private": true,
   "scripts": {
     "dev": "vite",
