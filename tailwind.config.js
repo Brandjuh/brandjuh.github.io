@@ -1,3 +1,4 @@
+// tailwind.config.js
 module.exports = {
   darkMode: 'class',
   content: [
@@ -15,6 +16,6 @@ module.exports = {
         'vigo-light-blue': '#00AEEF',
       }
     }
-  }
+  },
   plugins: [],
 }
