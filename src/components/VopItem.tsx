@@ -1,12 +1,7 @@
 import React, { useState } from 'react';
 import { EyeIcon, EyeOffIcon } from 'lucide-react';
 
-interface Vop {
-  id: number;
-  done: boolean;
-  hidden: boolean;
-  note: string;
-}
+interface Vop { id: number; done: boolean; hidden: boolean; note: string; }
 
 interface Props {
   vop: Vop;
@@ -19,12 +14,17 @@ const VopItem: React.FC<Props> = ({ vop, onToggleDone, onToggleHidden, onUpdateN
   const [editing, setEditing] = useState(false);
   const [tempNote, setTempNote] = useState(vop.note);
 
-  const saveNote = () => { onUpdateNote?.(tempNote); setEditing(false); };
+  const saveNote = () => {
+    onUpdateNote?.(tempNote);
+    setEditing(false);
+  };
 
   return (
-    <div className={`flex flex-col p-4 rounded-lg shadow-lg transition-colors $
-      {vop.hidden ? 'bg-gray-800' : 'bg-gray-700'} text-white border $
-      {vop.done ? 'border-green-500' : 'border-gray-600'}`}>
+    <div
+      className={`flex flex-col p-4 rounded-lg shadow-lg transition-colors $
+        {vop.hidden ? 'bg-gray-800' : 'bg-gray-700'} text-white border $
+        {vop.done ? 'border-green-500' : 'border-gray-600'}`}
+    >
       <div className="flex justify-between items-center mb-2">
         <span className="text-lg font-semibold">VOP {vop.id}</span>
         <button onClick={onToggleHidden} className="p-1">
@@ -35,9 +35,8 @@ const VopItem: React.FC<Props> = ({ vop, onToggleDone, onToggleHidden, onUpdateN
         <button
           onClick={onToggleDone}
           className={`px-4 py-2 rounded-full text-sm font-medium transition-colors $
-            {vop.done
-              ? 'bg-green-600 hover:bg-green-700'
-              : 'bg-blue-600 hover:bg-blue-700'}`}>
+            {vop.done ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700'}`}
+        >
           {vop.done ? 'Afgehandeld' : 'Markeer als afgehandeld'}
         </button>
       </div>
