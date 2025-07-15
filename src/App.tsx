@@ -10,11 +10,11 @@ const App: React.FC = () => {
   const [vops, setVops] = useLocalStorage<Vop[]>(
     'vops', Array.from({ length: 14 }, (_, i) => ({ id: i+1, done: false, hidden: false, note: '' }))
   );
-  // Dark mode altijd aan
+  // Altijd dark mode
   useEffect(() => { document.documentElement.classList.add('dark'); }, []);
 
   const [locale, setLocale] = useState<'nl' | 'en'>(() =>
-    (navigator.language.startsWith('en') ? 'en' : 'nl')
+    navigator.language.startsWith('en') ? 'en' : 'nl'
   );
 
   const toggleDone = (id: number) =>
@@ -26,30 +26,37 @@ const App: React.FC = () => {
 
   const handledCount = vops.filter(v => v.done).length;
   const pendingCount = vops.length - handledCount;
+  const progressPercent = Math.round((handledCount / vops.length) * 100);
   const orderedVops = [...vops.filter(v => !v.hidden), ...vops.filter(v => v.hidden)];
 
   return (
     <div className={styles.overview.container}>
-      <div className={styles.overview.header}>
-        <h2 className={styles.overview.title}>{strings[locale].progressTitle}</h2>
+      {/* Header met titel + onderschrift + taal */}
+      <header className={`${styles.overview.header} flex-col items-start space-y-2`}>
+        <h1 className="text-4xl font-bold">{strings[locale].title || 'VOP TOOL'}</h1>
+        <p className="text-gray-400">{strings[locale].subtitle || 'By Roel on the ramp'}</p>
         <div className="flex items-center space-x-4">
-          {/* Voortgang */}
-          <div className={styles.overview.stats}>
-            <div className={styles.overview.statsCount}>{handledCount}/{vops.length}</div>
-            <div className={styles.overview.statsLabel}>{pendingCount} {strings[locale].remaining}</div>
+          {/* Voortgangsbalk */}
+          <div className="w-full bg-gray-700 h-4 rounded">
+            <div
+              className="bg-blue-500 h-4 rounded"
+              style={{ width: `${progressPercent}%` }}
+            />
           </div>
-          {/* Taalkeuze dropdown */}
+          <span className="text-sm text-gray-300">{progressPercent}%</span>
+          {/* Taalkeuze */}
           <select
             value={locale}
             onChange={e => setLocale(e.target.value as 'nl' | 'en')}
-            className="p-1 rounded bg-gray-800 text-white"
+            className="p-1 rounded bg-gray-800 text-white w-24"
           >
             <option value="nl">🇳🇱 NL</option>
             <option value="en">🇬🇧 EN</option>
           </select>
         </div>
-      </div>
+      </header>
 
+      {/* Grid VOP */}
       <div className={styles.grid}>
         {orderedVops.map(v => (
           <VopItem
@@ -62,19 +69,22 @@ const App: React.FC = () => {
         ))}
       </div>
 
-      <div className={styles.quickActions}>
-        <button onClick={resetAll} className="px-4 py-2 bg-red-600 rounded hover:bg-red-700">
-          {strings[locale].resetAll}
-        </button>
-        <button onClick={() => vops.forEach(v => !v.done && toggleDone(v.id))} className="px-4 py-2 bg-green-600 rounded hover:bg-green-700">
-          {strings[locale].markAll}
-        </button>
-        <button onClick={() => vops.forEach(v => !v.hidden && toggleHidden(v.id))} className="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700">
-          {strings[locale].showAll}
-        </button>
-        <button onClick={() => vops.forEach(v => v.hidden && toggleHidden(v.id))} className="px-4 py-2 bg-yellow-600 rounded hover:bg-yellow-700">
-          {strings[locale].hideAll}
-        </button>
+      {/* Quick Actions met gelijke breedte knoppen */}
+      <div className={`${styles.quickActions} justify-center`}>  
+        {['resetAll', 'markAll', 'showAll', 'hideAll'].map(key => (
+          <button
+            key={key}
+            onClick={() => {
+              if (key === 'resetAll') resetAll();
+              if (key === 'markAll') vops.forEach(v => !v.done && toggleDone(v.id));
+              if (key === 'showAll') vops.forEach(v => !v.hidden && toggleHidden(v.id));
+              if (key === 'hideAll') vops.forEach(v => v.hidden && toggleHidden(v.id));
+            }}
+            className="w-40 px-4 py-2 bg-blue-600 rounded hover:bg-blue-700 text-white"
+          >
+            {strings[locale][key]}
+          </button>
+        ))}
       </div>
     </div>
   );
