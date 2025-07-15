@@ -34,7 +34,7 @@ const App: React.FC = () => {
           <div className="text-right text-sm">
             <span className="font-medium">{handledCount}/{vops.length}</span>
             <div className="text-gray-400">{pendingCount} remaining</div>
-          </</div>
+          </div>
         </div>
 
         {/* Grid of VOP cards */}
