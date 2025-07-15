@@ -4,16 +4,19 @@ on:
     branches:
       - main
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0      # nodig voor history indien rewrite
       - name: Install dependencies
         run: npm install
       - name: Build
-        run: npm run build
+        run: npm run build  # output: ./dist/
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
+          publish_branch: main  # pusht de inhoud van dist rechtstreeks naar root van main
