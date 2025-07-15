@@ -12,7 +12,7 @@ export const styles = {
   overview: {
     container:   'min-h-screen bg-gray-100 dark:bg-gray-900 p-6',
     header:      'max-w-2xl mx-auto flex flex-col sm:flex-row justify-between items-center mb-6',
-    title:       'text-3xl font-bold text-vigo-blue',
+    title:       'text-3xl font-bold text-vigo-orange',
     subtitle:    'text-sm text-vigo-gray mt-1',
     stats:       'flex items-baseline space-x-4 mt-4 sm:mt-0',
     statsCount:  'text-2xl font-semibold text-vigo-orange',
