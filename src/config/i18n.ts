@@ -6,7 +6,7 @@ interface Strings {
 
 export const strings: Strings = {
   en: {
-    title: 'VOP Tracker',
+    title: 'Stand',
     handled: 'Handled',
     markHandled: 'Mark as handled',
     notesPlaceholder: 'No notes',
@@ -14,12 +14,12 @@ export const strings: Strings = {
     markAll: 'Mark all handled',
     showAll: 'Show all',
     hideAll: 'Hide all',
-    progressTitle: 'Progress Overview',
+    progressTitle: 'Progress overview',
     remaining: 'remaining',
-    hiddenVops: 'Hidden VOPs'
+    hiddenVops: 'Hidden stands'
   },
   nl: {
-    title: 'VOP Tracker',
+    title: 'VOP',
     handled: 'Afgehandeld',
     markHandled: 'Markeer als afgehandeld TESATTEST',
     notesPlaceholder: 'Geen notities',
@@ -27,7 +27,7 @@ export const strings: Strings = {
     markAll: 'Markeer alle afgehandeld',
     showAll: 'Toon alle',
     hideAll: 'Verberg alle',
-    progressTitle: 'Voortgang Overzicht',
+    progressTitle: 'Voortgang overzicht',
     remaining: 'resterend',
     hiddenVops: 'Verborgen VOPs'
   }
