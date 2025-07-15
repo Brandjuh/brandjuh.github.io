@@ -21,7 +21,7 @@ export const strings: Strings = {
   nl: {
     title: 'VOP Tracker',
     handled: 'Afgehandeld',
-    markHandled: 'Markeer als afgehandeld',
+    markHandled: 'Markeer als afgehandeld TESATTEST',
     notesPlaceholder: 'Geen notities',
     resetAll: 'Alles resetten',
     markAll: 'Markeer alle afgehandeld',
