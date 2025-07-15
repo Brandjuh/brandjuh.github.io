@@ -13,12 +13,9 @@ const App: React.FC = () => {
   );
   const [darkMode, setDarkMode] = useLocalStorage<boolean>('darkMode', false);
 
-  const toggleDone = (id: number) =>
-    setVops(vops.map(v => v.id === id ? { ...v, done: !v.done } : v));
-  const toggleHidden = (id: number) =>
-    setVops(vops.map(v => v.id === id ? { ...v, hidden: !v.hidden } : v));
-  const resetAll = () =>
-    setVops(vops.map(v => ({ ...v, done: false, hidden: false, note: '' })));
+  const toggleDone = (id: number) => setVops(vops.map(v => v.id === id ? { ...v, done: !v.done } : v));
+  const toggleHidden = (id: number) => setVops(vops.map(v => v.id === id ? { ...v, hidden: !v.hidden } : v));
+  const resetAll = () => setVops(vops.map(v => ({ ...v, done: false, hidden: false, note: '' })));
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', darkMode);
@@ -29,11 +26,9 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-4">
-      {/* Centreer de app en beperk de breedte */}
       <div className="max-w-md mx-auto">
         <Header darkMode={darkMode} setDarkMode={setDarkMode} />
 
-        {/* VOP-kaarten */}
         <div className="space-y-4 mt-6">
           {visible.map(v => (
             <VopItem
@@ -44,7 +39,6 @@ const App: React.FC = () => {
             />
           ))}
 
-          {/* Verborgen VOPs inklapbaar */}
           {hidden.length > 0 && (
             <details className="mt-4 bg-gray-200 dark:bg-gray-800 p-3 rounded-lg">
               <summary className="font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
