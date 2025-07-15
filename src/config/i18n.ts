@@ -1,4 +1,5 @@
-// i18n.ts
+// src/config/i18n.ts
+
 interface Strings {
   en: Record<string, string>;
   nl: Record<string, string>;
@@ -6,7 +7,9 @@ interface Strings {
 
 export const strings: Strings = {
   en: {
-    title: 'Stand',
+    titleCustom: 'VOP TOOL',
+    subtitleCustom: 'By Roel on the ramp',
+    progressTitle: 'Progress Overview',
     handled: 'Handled',
     markHandled: 'Mark as handled',
     notesPlaceholder: 'No notes',
@@ -14,12 +17,17 @@ export const strings: Strings = {
     markAll: 'Mark all handled',
     showAll: 'Show all',
     hideAll: 'Hide all',
-    progressTitle: 'Progress overview',
     remaining: 'remaining',
-    hiddenVops: 'Hidden stands'
+    // Footer button keys
+    resetAll: 'Reset all',
+    markAll: 'Mark all handled',
+    showAll: 'Show all',
+    hideAll: 'Hide all'
   },
   nl: {
-    title: 'VOP',
+    titleCustom: 'VOP TOOL',
+    subtitleCustom: 'By Roel on the ramp',
+    progressTitle: 'Voortgang Overzicht',
     handled: 'Afgehandeld',
     markHandled: 'Markeer als afgehandeld',
     notesPlaceholder: 'Geen notities',
@@ -27,8 +35,11 @@ export const strings: Strings = {
     markAll: 'Markeer alle afgehandeld',
     showAll: 'Toon alle',
     hideAll: 'Verberg alle',
-    progressTitle: 'Voortgang overzicht',
     remaining: 'resterend',
-    hiddenVops: 'Verborgen VOPs'
+    // Footer button keys
+    resetAll: 'Alles resetten',
+    markAll: 'Markeer alle afgehandeld',
+    showAll: 'Toon alle',
+    hideAll: 'Verberg alle'
   }
 };
