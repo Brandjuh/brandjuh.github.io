@@ -10,7 +10,8 @@
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "lucide-react": "^0.278.0"
+    "lucide-react": "^0.278.0",
+    "react-confetti": "^8.1.0"
   },
   "devDependencies": {
     "vite": "^4.5.14",
