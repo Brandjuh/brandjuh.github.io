@@ -6,18 +6,27 @@ interface Vop { id: number; done: boolean; hidden: boolean; note: string; }
 
 const App: React.FC = () => {
   const [vops, setVops] = useLocalStorage<Vop[]>(
-    'vops', Array.from({ length: 14 }, (_, i) => ({ id: i+1, done: false, hidden: false, note: '' }))
+    'vops',
+    Array.from({ length: 14 }, (_, i) => ({ id: i+1, done: false, hidden: false, note: '' }))
   );
   const [darkMode, setDarkMode] = useLocalStorage<boolean>('darkMode', true);
 
-  useEffect(() => { document.documentElement.classList.toggle('dark', darkMode); }, [darkMode]);
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', darkMode);
+  }, [darkMode]);
 
-  const toggleDone = (id: number) => setVops(vops.map(v => v.id === id ? { ...v, done: !v.done } : v));
-  const toggleHidden = (id: number) => setVops(vops.map(v => v.id === id ? { ...v, hidden: !v.hidden } : v));
-  const resetAll = () => setVops(vops.map(v => ({ ...v, done: false, hidden: false, note: '' })));
+  const toggleDone = (id: number) =>
+    setVops(vops.map(v => v.id === id ? { ...v, done: !v.done } : v));
+  const toggleHidden = (id: number) =>
+    setVops(vops.map(v => v.id === id ? { ...v, hidden: !v.hidden } : v));
+  const resetAll = () =>
+    setVops(vops.map(v => ({ ...v, done: false, hidden: false, note: '' })));
 
   const handledCount = vops.filter(v => v.done).length;
   const pendingCount = vops.length - handledCount;
+
+  // Volgorde: eerst zichtbare, dan verborgen
+  const orderedVops = [...vops.filter(v => !v.hidden), ...vops.filter(v => v.hidden)];
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 p-6">
@@ -30,13 +39,15 @@ const App: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
-        {vops.map(v => (
+        {orderedVops.map(v => (
           <VopItem
             key={v.id}
             vop={v}
             onToggleDone={() => toggleDone(v.id)}
             onToggleHidden={() => toggleHidden(v.id)}
-            onUpdateNote={(note) => setVops(vops.map(item => item.id === v.id ? { ...item, note } : item))}
+            onUpdateNote={(note) =>
+              setVops(vops.map(item => item.id === v.id ? { ...item, note } : item))
+            }
           />
         ))}
       </div>
