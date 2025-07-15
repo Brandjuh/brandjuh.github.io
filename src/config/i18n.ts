@@ -21,7 +21,7 @@ export const strings: Strings = {
   nl: {
     title: 'VOP',
     handled: 'Afgehandeld',
-    markHandled: 'Markeer als afgehandeld TESATTEST',
+    markHandled: 'Markeer als afgehandeld',
     notesPlaceholder: 'Geen notities',
     resetAll: 'Alles resetten',
     markAll: 'Markeer alle afgehandeld',
