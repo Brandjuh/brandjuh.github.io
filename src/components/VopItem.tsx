@@ -1,12 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { EyeIcon, EyeOffIcon } from 'lucide-react';
 
-interface Vop {
-  id: number;
-  done: boolean;
-  hidden: boolean;
-  note: string;
-}
+interface Vop { id: number; done: boolean; hidden: boolean; note: string; }
 
 interface Props {
   vop: Vop;
@@ -16,60 +11,47 @@ interface Props {
 }
 
 const VopItem: React.FC<Props> = ({ vop, onToggleDone, onToggleHidden, onUpdateNote }) => {
-  const [editing, setEditing] = React.useState(false);
-  const [tempNote, setTempNote] = React.useState(vop.note);
+  const [editing, setEditing] = useState(false);
+  const [tempNote, setTempNote] = useState(vop.note);
 
-  const saveNote = () => {
-    onUpdateNote?.(tempNote);
-    setEditing(false);
-  };
+  const saveNote = () => { onUpdateNote?.(tempNote); setEditing(false); };
 
   return (
-    <div
-      className={`flex justify-between items-center p-4 rounded-lg shadow transition-colors ${
-        vop.done ? 'bg-green-50' : 'bg-white'
-      } dark:bg-gray-700`}
-    >
-      <div className="flex items-center space-x-3">
+    <div className={`flex flex-col p-4 rounded-lg shadow-lg bg-gray-800 text-white transition-colors ${vop.done ? 'border-green-500 border' : 'border-gray-700 border'}`}>
+      <div className="flex justify-between items-center mb-2">
+        <span className="text-lg font-semibold">VOP {vop.id}</span>
+        <button onClick={onToggleHidden} className="p-1">
+          {vop.hidden ? <EyeOffIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
+        </button>
+      </div>
+      <div className="flex justify-between items-center mb-3">
         <button
           onClick={onToggleDone}
-          className={`px-3 py-1 rounded-full border ${
+          className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
             vop.done
-              ? 'bg-green-500 text-white border-green-500'
-              : 'bg-white text-gray-800 border-gray-300'
-          } transition-colors`}
+              ? 'bg-green-600 hover:bg-green-700'
+              : 'bg-blue-600 hover:bg-blue-700'
+          }`}
         >
-          {vop.done ? 'Afgehandeld' : 'Markeer'}
+          {vop.done ? 'Afgehandeld' : 'Markeer als afgehandeld'}
         </button>
-        <span className="font-medium">VOP {vop.id}</span>
       </div>
-
-      <div className="flex items-center space-x-2">
-        <button onClick={onToggleHidden} className="p-1">
-          {vop.hidden ? (
-            <EyeOffIcon className="h-5 w-5 text-gray-500 hover:text-gray-700" />
-          ) : (
-            <EyeIcon className="h-5 w-5 text-gray-500 hover:text-gray-700" />
-          )}
-        </button>
+      <div className="flex justify-between items-center">
         {editing ? (
-          <div className="flex space-x-1">
-            <input
-              type="text"
-              className="border rounded px-2 py-1"
-              value={tempNote}
-              onChange={(e) => setTempNote(e.target.value)}
-            />
-            <button onClick={saveNote} className="text-blue-500">💾</button>
-          </div>
+          <input
+            type="text"
+            className="flex-grow bg-gray-700 border border-gray-600 rounded px-2 py-1 mr-2"
+            value={tempNote}
+            onChange={(e) => setTempNote(e.target.value)}
+          />
         ) : (
-          <button onClick={() => setEditing(true)} className="text-gray-500 hover:text-gray-700 dark:text-gray-300">
-            📝
-          </button>
+          <span className="text-sm text-gray-400">{vop.note || 'Geen notities'}</span>
         )}
+        <button onClick={() => editing ? saveNote() : setEditing(true)} className="p-1">
+          {editing ? '💾' : '📝'}
+        </button>
       </div>
     </div>
   );
 };
-
 export default VopItem;
