@@ -36,9 +36,9 @@ const App: React.FC = () => {
 
   return (
     <div className={styles.overview.container}>
-      <header className="header">
-        <h1 className="title">{strings[locale].titleCustom}</h1>
-        <p className="subtitle">{strings[locale].subtitleCustom}</p>
+      <header className="text-center mb-6">
+        <h1 className="text-3xl font-bold">{strings[locale].titleCustom}</h1>
+        <p className="text-sm text-gray-400">{strings[locale].subtitleCustom}</p>
       </header>
 
       {/* Progress bar */}
