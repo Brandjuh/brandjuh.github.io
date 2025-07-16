@@ -21,7 +21,7 @@ export const styles = {
   },
   card: {
     base: 'flex flex-col p-4 rounded-lg shadow-lg transition-colors border',
-    visible: 'bg-vigo-blue text-white border-vigo-gray',
+    visible: 'bg-vigo-purple text-white border-vigo-gray',
     hidden: 'bg-vigo-gray text-gray-700 border-vigo-gray opacity-70',
     doneButton: {
       done: 'bg-vigo-orange hover:bg-vigo-red text-white',
