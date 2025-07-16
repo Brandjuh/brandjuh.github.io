@@ -6,7 +6,7 @@ export const styles = {
     hidden:      'bg-vigo-gray text-gray-700 border-vigo-gray opacity-70',
     doneButton: {
       done:     'bg-vigo-orange hover:bg-vigo-red text-white',
-      todo:     'bg-vigo-light hover:bg-vigo-purple text-white'
+      todo:     'bg-blue-600 hover:bg-vigo-purple text-white'
     }
   },
   overview: {
