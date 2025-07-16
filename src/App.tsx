@@ -70,10 +70,10 @@ const App: React.FC = () => {
 
       {/* Footer Actions */}
       <footer className={styles.quickActions}>
-        <button onClick={resetAll} className="flex-1 px-4 py-2 bg-red-600 rounded hover:bg-red-700">{strings[locale].resetAll}</button>
-        <button onClick={markAll} className="flex-1 px-4 py-2 bg-green-600 rounded hover:bg-green-700">{strings[locale].markAll}</button>
-        <button onClick={showAll} className="flex-1 px-4 py-2 bg-blue-600 rounded hover:bg-blue-700">{strings[locale].showAll}</button>
-        <button onClick={hideAll} className="flex-1 px-4 py-2 bg-yellow-600 rounded hover:bg-yellow-700">{strings[locale].hideAll}</button>
+        <button onClick={resetAll} className="flex-1 px-4 py-2 vigo-orange rounded hover:vigo-orange">{strings[locale].resetAll}</button>
+        <button onClick={markAll} className="flex-1 px-4 py-2 vigo-red rounded hover:vigo-red">{strings[locale].markAll}</button>
+        <button onClick={showAll} className="flex-1 px-4 py-2 vigo-purple rounded hover:vigo-purple">{strings[locale].showAll}</button>
+        <button onClick={hideAll} className="flex-1 px-4 py-2 vigo-blue rounded hover:vigo-blue">{strings[locale].hideAll}</button>
         <button onClick={() => setLocale(locale === 'nl' ? 'en' : 'nl')} className="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-700">
           {locale === 'nl' ? '🇬🇧' : '🇳🇱'}
         </button>
