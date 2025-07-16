@@ -11,7 +11,9 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "lucide-react": "^0.278.0",
-    "react-confetti": "^6.4.0"
+    "react-confetti": "^6.4.0",
+    "canvas-confetti": "^1.5.1",
+    "fireworks-js": "^2.9.1"
   },
   "devDependencies": {
     "vite": "^4.5.14",
