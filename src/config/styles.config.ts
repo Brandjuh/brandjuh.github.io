@@ -19,5 +19,13 @@ export const styles = {
     statsLabel:  'text-gray-500'
   },
   grid:         'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6',
-  quickActions: 'bg-gray-800 p-4 rounded-lg flex flex-wrap gap-3'
-}
+  quickActions: 'bg-gray-800 p-4 rounded-lg flex flex-wrap gap-3',
+  quickButton: 'flex-1 px-4 py-2 rounded transition',
+  quickButtonVariants: {
+    resetAll: 'bg-red-600 hover:bg-red-700 text-white',
+    markAll: 'bg-green-600 hover:bg-green-700 text-white',
+    showAll: 'bg-blue-600 hover:bg-blue-700 text-white',
+    hideAll: 'bg-yellow-600 hover:bg-yellow-700 text-white',
+    locale: 'bg-gray-800 text-white hover:bg-gray-700'
+  }
+};
