@@ -69,15 +69,37 @@ const App: React.FC = () => {
       </div>
 
       {/* Footer Actions */}
-      <footer className={styles.quickActions}>
-        <button onClick={resetAll} className="flex-1 px-4 py-2 bg-red-600 rounded hover:bg-red-700">{strings[locale].resetAll}</button>
-        <button onClick={markAll} className="flex-1 px-4 py-2 bg-green-600 rounded hover:bg-green-700">{strings[locale].markAll}</button>
-        <button onClick={showAll} className="flex-1 px-4 py-2 bg-blue-600 rounded hover:bg-blue-700">{strings[locale].showAll}</button>
-        <button onClick={hideAll} className="flex-1 px-4 py-2 bg-yellow-600 rounded hover:bg-yellow-700">{strings[locale].hideAll}</button>
-        <button onClick={() => setLocale(locale === 'nl' ? 'en' : 'nl')} className="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-700">
-          {locale === 'nl' ? '🇬🇧' : '🇳🇱'}
-        </button>
-      </footer>
+<footer className={styles.quickActions}>
+  <button
+    onClick={resetAll}
+    className={`${styles.quickButton} ${styles.quickButtonVariants.resetAll}`}>
+    {strings[locale].resetAll}
+  </button>
+  <button
+    onClick={markAll}
+    className={`${styles.quickButton} ${styles.quickButtonVariants.markAll}`}
+  >
+    {strings[locale].markAll}
+  </button>
+  <button
+    onClick={showAll}
+    className={`${styles.quickButton} ${styles.quickButtonVariants.showAll}`}
+  >
+    {strings[locale].showAll}
+  </button>
+  <button
+    onClick={hideAll}
+    className={`${styles.quickButton} ${styles.quickButtonVariants.hideAll}`}
+  >
+    {strings[locale].hideAll}
+  </button>
+  <button
+    onClick={() => setLocale(locale === 'nl' ? 'en' : 'nl')}
+    className={`${styles.quickButton} ${styles.quickButtonVariants.locale}`}
+  >
+    {locale === 'nl' ? '🇬🇧' : '🇳🇱'}
+  </button>
+</footer>
 
       {allHandled && <Confetti recycle={false} />}
     </div>
