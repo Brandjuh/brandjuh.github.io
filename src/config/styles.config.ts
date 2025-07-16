@@ -23,7 +23,7 @@ export const styles = {
   quickButton: 'flex-1 px-4 py-2 rounded transition',
   quickButtonVariants: {
     resetAll: 'bg-red-600 hover:bg-red-700 text-white',
-    markAll: 'bg-green-600 hover:bg-green-700 text-white',
+    markAll: 'vigo-red hover:vigo-red text-white',
     showAll: 'bg-blue-600 hover:bg-blue-700 text-white',
     hideAll: 'bg-yellow-600 hover:bg-yellow-700 text-white',
     locale: 'bg-gray-800 text-white hover:bg-gray-700'
