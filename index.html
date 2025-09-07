@@ -277,7 +277,8 @@ LAFD 067"></textarea>
     function downloadCanvas(which, name){ const safe=(name||'tag').replace(/[^a-z0-9-_]+/gi,'_'); const url=canvases[which].toDataURL('image/png'); const a=document.createElement('a'); a.href=url; a.download = which==='urgent'? `${safe}__spoed.png` : `${safe}__normaal.png`; a.click(); setTimeout(()=>URL.revokeObjectURL(url), 2500); }
 
     async function downloadBatch(){
-      const lines=(inputs.batch.value||'').split(/?
+      const lines=(inputs.batch.value||'').split(/
+?
 /).map(s=>s.trim()).filter(Boolean);
       if(!lines.length){ downloadCanvas('normal', (inputs.text.value||'tag')); downloadCanvas('urgent', (inputs.text.value||'tag')); return; }
       const zip=new JSZip();
