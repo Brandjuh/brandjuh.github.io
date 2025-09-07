@@ -3,383 +3,234 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>CAD Tag Generator</title>
+  <title>CAD Tag Generator — Safe Mode</title>
   <style>
     :root { --bg:#0b0f17; --panel:#121826; --muted:#8aa0b4; --text:#e7eef7; --accent:#5cc8ff; }
     *{box-sizing:border-box}
-    html,body{height:100%}
-    body{ margin:0; font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,"Helvetica Neue",Arial; background:linear-gradient(180deg,#0b0f17,#0f1524); color:var(--text); display:flex; align-items:stretch; justify-content:center; padding:16px; }
-    .app{display:grid; grid-template-columns: 420px minmax(360px,1fr); gap:16px; width:min(1300px,100%)}
-    .card{background:var(--panel); border:1px solid #1d2740; border-radius:14px; padding:16px; box-shadow:0 6px 30px rgba(0,0,0,.25)}
-    h1{font-size:20px; margin:0 0 12px; letter-spacing:.3px}
-    .row{display:grid; grid-template-columns:1fr 1fr; gap:10px}
-    .row-3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px}
-    label{display:block; font-size:12px; color:var(--muted); margin-bottom:6px}
-    input[type="text"],input[type="number"],select,textarea{ width:100%; padding:10px 12px; border-radius:10px; border:1px solid #24314f; background:#0c1324; color:#e6eef7; outline:none; transition:border-color .15s ease }
-    input:focus, select:focus, textarea:focus{ border-color:#395296 }
-    textarea{min-height:120px; resize:vertical}
-    .stack{display:grid; gap:10px}
-    .btns{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px}
-    button{ cursor:pointer; padding:10px 14px; border-radius:12px; border:1px solid #29406f; background:#12244a; color:#e7eef7; font-weight:600 }
-    button.primary{ border-color:#1c87b4; background:linear-gradient(180deg,#1e6e9b,#175c85)}
-    button.warn{ border-color:#b41c1c; background:linear-gradient(180deg,#9b1e1e,#851717)}
-    button.ghost{ background:transparent }
-    .preview-wrap{display:grid; gap:12px}
-    .preview-area{background:#0a0f1a; border:1px dashed #2a3a66; border-radius:14px; width:100%; display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:12px}
-    .preview-col{display:grid; gap:8px; place-items:center}
-    .label{font-size:12px; color:#96a7bb}
-    canvas{max-width:100%; height:auto; image-rendering:crisp-edges}
-    .hint{font-size:12px; color:#96a7bb}
-    .switch{display:flex; align-items:center; gap:10px}
-    .switch input{accent-color:#36a7da}
-    .color-field{display:flex; gap:10px; align-items:center}
-    .color-field input[type="color"]{width:36px; height:36px; padding:0; border:none; background:transparent}
-    .sep{height:1px; background:#1d2740; margin:8px 0}
+    body{margin:0;background:#0b0f17;color:var(--text);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial}
+    .wrap{display:grid;grid-template-columns:380px 1fr;gap:16px;min-height:100vh;padding:16px}
+    .card{background:#111724;border:1px solid #1d2740;border-radius:14px;padding:16px;box-shadow:0 6px 30px rgba(0,0,0,.25)}
+    h1{font-size:18px;margin:0 0 10px}
+    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+    input,select,textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid #24314f;background:#0c1324;color:#e7eef7;outline:none}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+    .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    button{cursor:pointer;padding:10px 14px;border-radius:12px;border:1px solid #29406f;background:#12244a;color:#e7eef7;font-weight:600}
+    button.primary{border-color:#1c87b4;background:linear-gradient(180deg,#1e6e9b,#175c85)}
+    button.warn{border-color:#b41c1c;background:linear-gradient(180deg,#9b1e1e,#851717)}
+    .preview{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .slot{display:grid;gap:8px;place-items:center}
+    .label{font-size:12px;color:#96a7bb}
+    canvas{max-width:100%;height:auto;background:#0a0f1a;border:1px dashed #2a3a66;border-radius:12px}
+    .status{position:sticky;top:16px;background:#0c1324;border:1px solid #24314f;border-radius:12px;padding:10px;font-family:ui-monospace,Consolas,monospace;font-size:12px;color:#cfe7ff;white-space:pre-wrap}
+    .err{color:#ffd2d2}
+    .ok{color:#aef0c3}
+    noscript{display:block;margin:12px 0;padding:12px;border-radius:10px;background:#3a0e0e;color:#ffdede;border:1px solid #6b1a1a}
   </style>
 </head>
 <body>
-  <div class="app">
-    <section class="card stack">
+  <div class="wrap">
+    <div class="card">
       <h1>Instellingen</h1>
-      <div class="stack">
-        <div class="row">
-          <div>
-            <label for="text">Tekst (bijv. LAFD 021)</label>
-            <input id="text" type="text" placeholder="LAFD 021" value="LAFD 021" />
-          </div>
-          <div>
-            <label for="uppercase">Uppercase</label>
-            <div class="switch"><input id="uppercase" type="checkbox" checked /> <span class="hint">Alles in hoofdletters</span></div>
-          </div>
+      <noscript>JavaScript staat uit. Zet JS aan — anders werkt deze pagina niet.</noscript>
+      <div class="row">
+        <div>
+          <label for="text">Tekst</label>
+          <input id="text" value="LAFD 021" />
         </div>
-        <div class="row">
-          <div>
-            <label for="font">Lettertype</label>
-            <select id="font">
-              <option value="Inter, system-ui, Arial">Inter (system)</option>
-              <option value="Segoe UI, system-ui, Arial">Segoe UI</option>
-              <option value="Roboto, system-ui, Arial">Roboto</option>
-              <option value="Oswald, Impact, Arial Narrow, sans-serif">Oswald (smal)</option>
-              <option value="Roboto Mono, Consolas, monospace">Monospace</option>
-            </select>
-          </div>
-          <div>
-            <label for="weight">Gewicht</label>
-            <select id="weight">
-              <option value="500">Medium</option>
-              <option value="600" selected>Semibold</option>
-              <option value="700">Bold</option>
-              <option value="800">ExtraBold</option>
-            </select>
-          </div>
+        <div>
+          <label for="uppercase">Uppercase</label>
+          <select id="uppercase"><option value="1" selected>Ja</option><option value="0">Nee</option></select>
         </div>
-        <div class="row-3">
-          <div>
-            <label for="size">Tekstgrootte (px)</label>
-            <input id="size" type="number" min="8" max="200" value="48" />
-          </div>
-          <div>
-            <label for="padX">Padding X (px)</label>
-            <input id="padX" type="number" min="0" max="200" value="28" />
-          </div>
-          <div>
-            <label for="padY">Padding Y (px)</label>
-            <input id="padY" type="number" min="0" max="200" value="16" />
-          </div>
-        </div>
-
-        <!-- Normaal -->
-        <h1>Normaal (zonder spoed)</h1>
-        <div class="row">
-          <div class="color-field">
-            <div>
-              <label for="textColor">Tekstkleur</label>
-              <input id="textColor" type="color" value="#ffffff" />
-            </div>
-            <div>
-              <label for="strokeColor">Randkleur</label>
-              <input id="strokeColor" type="color" value="#1E90FF" />
-            </div>
-            <div>
-              <label for="stroke">Rand (px)</label>
-              <input id="stroke" type="number" min="0" max="20" value="3" />
-            </div>
-          </div>
-          <div class="color-field">
-            <div>
-              <label for="bgColor">Achtergrond</label>
-              <input id="bgColor" type="color" value="#0B1736" />
-            </div>
-            <div>
-              <label for="bgAlpha">BG transparantie</label>
-              <input id="bgAlpha" type="number" min="0" max="1" step="0.05" value="0.75" />
-            </div>
-            <div>
-              <label for="radius">Hoekradius (px)</label>
-              <input id="radius" type="number" min="0" max="40" value="12" />
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="switch"><input id="transparentBg" type="checkbox" /> <span class="hint">Transparante achtergrond (negeert BG kleur)</span></div>
-        </div>
-
-        <div class="sep"></div>
-
-        <!-- Spoed -->
-        <h1>Spoed (gradient-achtergrond)</h1>
-        <div class="row">
-          <div class="color-field">
-            <div>
-              <label for="gradStart">Gradient start</label>
-              <input id="gradStart" type="color" value="#ff2d2d" />
-            </div>
-            <div>
-              <label for="gradEnd">Gradient eind</label>
-              <input id="gradEnd" type="color" value="#ffd500" />
-            </div>
-            <div>
-              <label for="gradAngle">Hoek (°)</label>
-              <input id="gradAngle" type="number" min="0" max="360" value="0" />
-            </div>
-          </div>
-          <div class="color-field">
-            <div class="switch"><input id="gradAnimate" type="checkbox" checked /> <span class="hint">Animeer voorbeeld</span></div>
-            <div>
-              <label for="gradSpeed">Snelheid</label>
-              <input id="gradSpeed" type="number" min="0.1" max="5" step="0.1" value="1.2" />
-            </div>
-          </div>
-        </div>
-
-        <div class="sep"></div>
-        <div class="stack">
-          <label for="batch">Batch (één label per regel)</label>
-          <textarea id="batch" placeholder="LAFD 021
-LAFD 033
-LAFD 067"></textarea>
-          <div class="btns">
-            <button class="primary" id="downloadOne">Download PNG (normaal)</button>
-            <button class="warn" id="downloadUrgent">Download PNG (spoed)</button>
-            <button id="downloadBoth">Download beide</button>
-            <button id="downloadBatch">Batch → ZIP (beide)</button>
-            <button class="ghost" id="reset">Reset</button>
-          </div>
-        </div>
-        <div class="hint">GitHub Pages: zet dit bestand als <code>index.html</code> in je repo. Batch-zip bevat per label twee bestanden: <code>_normaal</code> en <code>_spoed</code>.</div>
       </div>
-    </section>
+      <div class="row">
+        <div>
+          <label for="font">Lettertype</label>
+          <select id="font">
+            <option>Segoe UI, system-ui, Arial</option>
+            <option>Roboto, system-ui, Arial</option>
+            <option>Inter, system-ui, Arial</option>
+            <option>Oswald, Impact, Arial Narrow, sans-serif</option>
+            <option>Roboto Mono, Consolas, monospace</option>
+          </select>
+        </div>
+        <div>
+          <label for="weight">Gewicht</label>
+          <select id="weight"><option>600</option><option>700</option><option>800</option><option>500</option></select>
+        </div>
+      </div>
+      <div class="row-3">
+        <div><label for="size">Tekstgrootte</label><input id="size" type="number" value="48" min="8" max="200"/></div>
+        <div><label for="padX">Padding X</label><input id="padX" type="number" value="28" min="0" max="200"/></div>
+        <div><label for="padY">Padding Y</label><input id="padY" type="number" value="16" min="0" max="200"/></div>
+      </div>
 
-    <section class="card preview-wrap">
+      <h1>Normaal</h1>
+      <div class="row">
+        <div><label for="textColor">Tekst</label><input id="textColor" type="color" value="#ffffff"/></div>
+        <div><label for="strokeColor">Randkleur</label><input id="strokeColor" type="color" value="#1E90FF"/></div>
+      </div>
+      <div class="row-3">
+        <div><label for="stroke">Rand (px)</label><input id="stroke" type="number" value="3" min="0" max="20"/></div>
+        <div><label for="radius">Hoekradius</label><input id="radius" type="number" value="12" min="0" max="40"/></div>
+        <div><label for="bgAlpha">BG α</label><input id="bgAlpha" type="number" value="0.75" step="0.05" min="0" max="1"/></div>
+      </div>
+      <div class="row">
+        <div><label for="bgColor">Achtergrond</label><input id="bgColor" type="color" value="#0B1736"/></div>
+        <div><label for="transparentBg">Transparant</label><select id="transparentBg"><option value="0" selected>Nee</option><option value="1">Ja</option></select></div>
+      </div>
+
+      <h1>Spoed</h1>
+      <div class="row">
+        <div><label for="gradStart">Startkleur</label><input id="gradStart" type="color" value="#ff2d2d"/></div>
+        <div><label for="gradEnd">Eindkleur</label><input id="gradEnd" type="color" value="#ffd500"/></div>
+      </div>
+      <div class="row">
+        <div><label for="gradAngle">Hoek (°)</label><input id="gradAngle" type="number" value="0" min="0" max="360"/></div>
+      </div>
+
+      <div class="btns">
+        <button class="primary" id="dlNormaal">Download normaal</button>
+        <button class="warn" id="dlSpoed">Download spoed</button>
+        <button id="dlBeide">Download beide</button>
+      </div>
+
+      <div class="status" id="status">Status: init...
+JS geladen: ❓
+Laatst gerenderd: –
+DPR: –
+Normal canvas: –
+Urgent canvas: –
+Text metrics: –
+Error: –
+      </div>
+    </div>
+
+    <div class="card">
       <h1>Voorbeeld</h1>
-      <div class="preview-area">
-        <div class="preview-col">
-          <div class="label">Normaal</div>
-          <canvas id="canvasNormal" width="800" height="300"></canvas>
-        </div>
-        <div class="preview-col">
-          <div class="label">Spoed</div>
-          <canvas id="canvasUrgent" width="800" height="300"></canvas>
-        </div>
+      <div class="preview">
+        <div class="slot"><div class="label">Normaal</div><canvas id="cn" width="600" height="240"></canvas></div>
+        <div class="slot"><div class="label">Spoed</div><canvas id="cu" width="600" height="240"></canvas></div>
       </div>
-      <div class="hint">PNG export is scherp (2× pixel ratio). Tekst blijft identiek; alleen achtergrond verschilt.</div>
-    </section>
+    </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script>
-    // ---- Utilities ----
-    function $(id){ return document.getElementById(id); }
-    function clamp(n,min,max){ n=+n; if(isNaN(n)) n=min; return Math.max(min, Math.min(max, n)); }
-    function roundRectPath(ctx, x, y, w, h, r){
-      r = Math.max(0, Math.min(r, Math.min(w,h)/2));
-      ctx.beginPath();
-      ctx.moveTo(x+r, y);
-      ctx.arcTo(x+w, y,   x+w, y+h, r);
-      ctx.arcTo(x+w, y+h, x,   y+h, r);
-      ctx.arcTo(x,   y+h, x,   y,   r);
-      ctx.arcTo(x,   y,   x+w, y,   r);
-      ctx.closePath();
-    }
+    (function(){
+      // ---------- DEBUG OVERLAY ----------
+      var statusEl = document.getElementById('status');
+      function showStatus(obj){
+        var s = 'Status: OK
+';
+        s += 'JS geladen: ✅
+';
+        s += 'Laatst gerenderd: ' + (new Date()).toLocaleTimeString() + '
+';
+        s += 'DPR: ' + (window.devicePixelRatio||1) + '
+';
+        s += 'Normal canvas: CSS ' + cn.style.width + ' x ' + cn.style.height + ' | Buffer ' + cn.width + ' x ' + cn.height + '
+';
+        s += 'Urgent canvas: CSS '  + cu.style.width + ' x ' + cu.style.height + ' | Buffer ' + cu.width + ' x ' + cu.height + '
+';
+        if(obj && obj.metrics){ s += 'Text metrics: w=' + obj.metrics.w + ', h=' + obj.metrics.h + '
+'; }
+        if(obj && obj.err){ s += 'Error: ' + obj.err + '
+'; }
+        statusEl.textContent = s;
+      }
+      window.addEventListener('error', function(e){ statusEl.textContent += '
+[window.onerror] ' + e.message; });
+      window.addEventListener('unhandledrejection', function(e){ statusEl.textContent += '
+[unhandledrejection] ' + (e.reason && e.reason.message || e.reason); });
 
-    // ---- Grab DOM ----
-    var cvsNormal = $('canvasNormal');
-    var cvsUrgent = $('canvasUrgent');
-    var ctxNormal = cvsNormal.getContext('2d');
-    var ctxUrgent = cvsUrgent.getContext('2d');
+      // ---------- ELEMENTS ----------
+      var cn = document.getElementById('cn');
+      var cu = document.getElementById('cu');
+      var ctxN = cn.getContext('2d');
+      var ctxU = cu.getContext('2d');
 
-    var inputs = {
-      text: $('text'), uppercase: $('uppercase'), font: $('font'), weight: $('weight'), size: $('size'),
-      padX: $('padX'), padY: $('padY'), textColor: $('textColor'), strokeColor: $('strokeColor'), stroke: $('stroke'),
-      bgColor: $('bgColor'), bgAlpha: $('bgAlpha'), radius: $('radius'), transparentBg: $('transparentBg'),
-      gradStart: $('gradStart'), gradEnd: $('gradEnd'), gradAngle: $('gradAngle'),
-      batch: $('batch'), downloadOne: $('downloadOne'), downloadUrgent: $('downloadUrgent'), downloadBoth: $('downloadBoth'), downloadBatch: $('downloadBatch'), reset: $('reset')
-    };
+      var $ = function(id){ return document.getElementById(id); }
+      var inputs = {
+        text: $('text'), uppercase: $('uppercase'), font: $('font'), weight: $('weight'), size: $('size'), padX: $('padX'), padY: $('padY'),
+        textColor: $('textColor'), strokeColor: $('strokeColor'), stroke: $('stroke'), radius: $('radius'), bgAlpha: $('bgAlpha'), bgColor: $('bgColor'), transparentBg: $('transparentBg'),
+        gradStart: $('gradStart'), gradEnd: $('gradEnd'), gradAngle: $('gradAngle')
+      };
 
-    // ---- Core render ----
-    function measure(ctx, text, font){
-      ctx.save();
-      ctx.setTransform(1,0,0,1,0,0); // ensure neutral for accurate metrics
-      ctx.font = font;
-      var w = Math.ceil(ctx.measureText(text).width);
-      var h = Math.ceil(parseInt(font,10) * 1.2);
-      ctx.restore();
-      return {w:w, h:h};
-    }
+      function clamp(n, a, b){ n = parseFloat(n); if(isNaN(n)) n=a; return Math.max(a, Math.min(b, n)); }
 
-    function compute(){
-      var raw = (inputs.text.value || 'LAFD 021').trim();
-      var text = inputs.uppercase.checked ? raw.toUpperCase() : raw;
-      var size = clamp(inputs.size.value, 8, 200);
-      var padX = clamp(inputs.padX.value, 0, 200);
-      var padY = clamp(inputs.padY.value, 0, 200);
-      var stroke = clamp(inputs.stroke.value, 0, 40);
-      var radius = clamp(inputs.radius.value, 0, 60);
-      var weight = inputs.weight.value + '';
-      var family = inputs.font.value + '';
-      var font = weight + ' ' + size + 'px ' + family;
-      return { text:text, size:size, padX:padX, padY:padY, stroke:stroke, radius:radius, weight:weight, family:family, font:font };
-    }
+      // Afzonderlijk meet-canvas zodat transforms nooit storen
+      var measureCanvas = document.createElement('canvas');
+      var mctx = measureCanvas.getContext('2d');
+      function measureText(text, font){ mctx.font = font; return { w: Math.ceil(mctx.measureText(text).width), h: Math.ceil(parseInt(font)*1.2) }; }
 
-    function setupCanvas(canvas, w, h, dpr){
-      // Setting width/height properties resets the context state (safer than setTransform juggling)
-      canvas.width  = Math.max(1, Math.floor(w * dpr));
-      canvas.height = Math.max(1, Math.floor(h * dpr));
-      canvas.style.width  = Math.round(w) + 'px';
-      canvas.style.height = Math.round(h) + 'px';
-    }
+      function setup(canvas, w, h, dpr){ canvas.width = Math.max(1, Math.floor(w*dpr)); canvas.height = Math.max(1, Math.floor(h*dpr)); canvas.style.width = Math.round(w)+'px'; canvas.style.height = Math.round(h)+'px'; }
+      function rr(ctx,x,y,w,h,r){ r=Math.max(0,Math.min(r,Math.min(w,h)/2)); ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+      function grad(ctx,x,y,w,h,ang,c0,c1){ var rad = (ang%360)*Math.PI/180; var cx=x+w/2, cy=y+h/2; var R=Math.sqrt(w*w+h*h)/2; var x0=cx-Math.cos(rad)*R, y0=cy-Math.sin(rad)*R; var x1=cx+Math.cos(rad)*R, y1=cy+Math.sin(rad)*R; var g=ctx.createLinearGradient(x0,y0,x1,y1); g.addColorStop(0,c0); g.addColorStop(1,c1); return g; }
 
-    function makeLinearGradient(ctx, x, y, w, h, angleDeg, c0, c1){
-      var rad = (angleDeg % 360) * Math.PI/180;
-      var cx = x + w/2, cy = y + h/2;
-      var r = Math.sqrt(w*w + h*h)/2;
-      var x0 = cx - Math.cos(rad)*r, y0 = cy - Math.sin(rad)*r;
-      var x1 = cx + Math.cos(rad)*r, y1 = cy + Math.sin(rad)*r;
-      var g = ctx.createLinearGradient(x0,y0,x1,y1);
-      g.addColorStop(0, c0);
-      g.addColorStop(1, c1);
-      return g;
-    }
+      function params(){
+        var raw = (inputs.text.value||'LAFD 021').trim();
+        var text = (inputs.uppercase.value==='1') ? raw.toUpperCase() : raw;
+        var size = clamp(inputs.size.value,8,200);
+        var padX = clamp(inputs.padX.value,0,200);
+        var padY = clamp(inputs.padY.value,0,200);
+        var stroke = clamp(inputs.stroke.value,0,40);
+        var radius = clamp(inputs.radius.value,0,40);
+        var weight = inputs.weight.value+'';
+        var family = inputs.font.value+'';
+        var font = weight + ' ' + size + 'px ' + family;
+        return {text,size,padX,padY,stroke,radius,weight,family,font};
+      }
 
-    function drawOne(which){
-      var p = compute();
-      var ctx = which === 'urgent' ? ctxUrgent : ctxNormal;
-      var dpr = Math.max(1, Math.round(window.devicePixelRatio || 1));
+      function drawOne(ctx, canvas, urgent){
+        var p = params();
+        var m = measureText(p.text, p.font);
+        var w = m.w + p.padX*2 + p.stroke*2;
+        var h = m.h + p.padY*2 + p.stroke*2;
+        var dpr = Math.max(1, Math.round(window.devicePixelRatio||1));
+        setup(canvas, w, h, dpr);
 
-      // measure text at neutral transform
-      var m = measure(ctx, p.text, p.font);
-      var w = m.w + p.padX*2 + p.stroke*2;
-      var h = m.h + p.padY*2 + p.stroke*2;
+        ctx.setTransform(1,0,0,1,0,0);
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.scale(dpr,dpr);
 
-      setupCanvas(which === 'urgent' ? cvsUrgent : cvsNormal, w, h, dpr);
-
-      ctx.setTransform(1,0,0,1,0,0);
-      ctx.clearRect(0,0,ctx.canvas.width, ctx.canvas.height);
-      ctx.scale(dpr, dpr);
-
-      // background
-      if(!inputs.transparentBg.checked){
-        if(which === 'urgent'){
-          var start = inputs.gradStart.value || '#ff2d2d';
-          var end   = inputs.gradEnd.value   || '#ffd500';
-          var angle = parseFloat(inputs.gradAngle.value) || 0;
-          var alpha = clamp(parseFloat(inputs.bgAlpha.value)||0.75, 0, 1);
-          ctx.globalAlpha = alpha;
-          ctx.fillStyle = makeLinearGradient(ctx, p.stroke/2, p.stroke/2, w - p.stroke, h - p.stroke, angle, start, end);
-          roundRectPath(ctx, p.stroke/2, p.stroke/2, w - p.stroke, h - p.stroke, p.radius);
-          ctx.fill();
-          ctx.globalAlpha = 1;
-        } else {
-          var bg = inputs.bgColor.value || '#0B1736';
-          var a2 = clamp(parseFloat(inputs.bgAlpha.value)||0.75, 0, 1);
-          ctx.globalAlpha = a2;
-          ctx.fillStyle = bg;
-          roundRectPath(ctx, p.stroke/2, p.stroke/2, w - p.stroke, h - p.stroke, p.radius);
-          ctx.fill();
-          ctx.globalAlpha = 1;
+        // achtergrond
+        if(inputs.transparentBg.value !== '1'){
+          if(urgent){
+            var a = clamp(inputs.bgAlpha.value,0,1);
+            ctx.globalAlpha = a;
+            ctx.fillStyle = grad(ctx, p.stroke/2, p.stroke/2, w-p.stroke, h-p.stroke, parseFloat(inputs.gradAngle.value)||0, inputs.gradStart.value||'#ff2d2d', inputs.gradEnd.value||'#ffd500');
+            rr(ctx, p.stroke/2, p.stroke/2, w-p.stroke, h-p.stroke, p.radius); ctx.fill(); ctx.globalAlpha=1;
+          } else {
+            var a2 = clamp(inputs.bgAlpha.value,0,1);
+            ctx.globalAlpha = a2; ctx.fillStyle = inputs.bgColor.value || '#0B1736';
+            rr(ctx, p.stroke/2, p.stroke/2, w-p.stroke, h-p.stroke, p.radius); ctx.fill(); ctx.globalAlpha=1;
+          }
         }
+        // rand
+        if(p.stroke>0){ ctx.strokeStyle = inputs.strokeColor.value||'#1E90FF'; ctx.lineWidth=p.stroke; rr(ctx, p.stroke/2, p.stroke/2, w-p.stroke, h-p.stroke, p.radius); ctx.stroke(); }
+        // tekst
+        ctx.font = p.font; ctx.textBaseline='middle'; ctx.fillStyle = inputs.textColor.value||'#fff';
+        ctx.fillText(p.text, Math.round(w/2 - m.w/2 + (p.stroke/2)), Math.round(h/2));
+
+        showStatus({metrics:m});
       }
 
-      // border
-      if(p.stroke > 0){
-        ctx.strokeStyle = inputs.strokeColor.value || '#1E90FF';
-        ctx.lineWidth = p.stroke;
-        roundRectPath(ctx, p.stroke/2, p.stroke/2, w - p.stroke, h - p.stroke, p.radius);
-        ctx.stroke();
-      }
+      function draw(){ drawOne(ctxN, cn, false); drawOne(ctxU, cu, true); }
 
-      // text
-      ctx.font = p.font;
-      ctx.textBaseline = 'middle';
-      ctx.fillStyle = inputs.textColor.value || '#fff';
-      var cx = w/2, cy = h/2;
-      ctx.fillText(p.text, Math.round(cx - m.w/2 + (p.stroke/2)), Math.round(cy));
-    }
+      // Events (simpel en betrouwbaar)
+      var ids = ['text','uppercase','font','weight','size','padX','padY','textColor','strokeColor','stroke','radius','bgAlpha','bgColor','transparentBg','gradStart','gradEnd','gradAngle'];
+      ids.forEach(function(id){ var el = document.getElementById(id); if(el){ el.addEventListener('input', draw); el.addEventListener('change', draw); }});
 
-    function drawAll(){ drawOne('normal'); drawOne('urgent'); }
+      // Downloads
+      function save(canvas, base){ var name = (base||'tag').replace(/[^a-z0-9-_]+/gi,'_'); var link = document.createElement('a'); link.href = canvas.toDataURL('image/png'); link.download = name; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
+      document.getElementById('dlNormaal').addEventListener('click', function(){ save(cn, (inputs.text.value||'tag')+'__normaal.png'); });
+      document.getElementById('dlSpoed').addEventListener('click', function(){ save(cu, (inputs.text.value||'tag')+'__spoed.png'); });
+      document.getElementById('dlBeide').addEventListener('click', function(){ save(cn, (inputs.text.value||'tag')+'__normaal.png'); setTimeout(function(){ save(cu, (inputs.text.value||'tag')+'__spoed.png'); }, 200); });
 
-    function safeName(s){ return (s || 'tag').replace(/[^a-z0-9-_]+/gi,'_'); }
-
-    function download(which, base){
-      var name = safeName(base);
-      var canvas = which === 'urgent' ? cvsUrgent : cvsNormal;
-      var url = canvas.toDataURL('image/png');
-      var a = document.createElement('a');
-      a.href = url;
-      a.download = which === 'urgent' ? (name + '__spoed.png') : (name + '__normaal.png');
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    }
-
-    async function downloadZip(){
-      var lines = (inputs.batch.value || '').split(/
-?
-/).map(function(s){return s.trim();}).filter(Boolean);
-      if(!lines.length){
-        download('normal', inputs.text.value || 'tag');
-        download('urgent', inputs.text.value || 'tag');
-        return;
-      }
-      var zip = new JSZip();
-      for(var i=0;i<lines.length;i++){
-        inputs.text.value = lines[i];
-        drawAll();
-        var base = safeName(lines[i]);
-        zip.file(base + '__normaal.png', cvsNormal.toDataURL('image/png').split(',')[1], {base64:true});
-        zip.file(base + '__spoed.png',   cvsUrgent.toDataURL('image/png').split(',')[1], {base64:true});
-      }
-      drawAll();
-      var blob = await zip.generateAsync({type:'blob'});
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement('a'); a.href=url; a.download='cad-tags.zip'; document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
-    }
-
-    function resetDefaults(){
-      inputs.text.value='LAFD 021'; inputs.uppercase.checked=true; inputs.font.value='Inter, system-ui, Arial'; inputs.weight.value='600';
-      inputs.size.value=48; inputs.padX.value=28; inputs.padY.value=16; inputs.radius.value=12;
-      inputs.textColor.value='#ffffff'; inputs.strokeColor.value='#1E90FF'; inputs.stroke.value=3;
-      inputs.bgColor.value='#0B1736'; inputs.bgAlpha.value=0.75; inputs.transparentBg.checked=false;
-      inputs.gradStart.value='#ff2d2d'; inputs.gradEnd.value='#ffd500'; inputs.gradAngle.value=0;
-      inputs.batch.value='';
-      drawAll();
-    }
-
-    // ---- Wire up events (no optional chaining, broad compatibility) ----
-    var liveInputs = ['text','uppercase','font','weight','size','padX','padY','textColor','strokeColor','stroke','bgColor','bgAlpha','radius','transparentBg','gradStart','gradEnd','gradAngle'];
-    for(var i=0;i<liveInputs.length;i++){
-      var el = inputs[liveInputs[i]];
-      if(el){ el.addEventListener('input', drawAll); el.addEventListener('change', drawAll); }
-    }
-    inputs.downloadOne.addEventListener('click', function(){ download('normal', inputs.text.value || 'tag'); });
-    inputs.downloadUrgent.addEventListener('click', function(){ download('urgent', inputs.text.value || 'tag'); });
-    inputs.downloadBoth.addEventListener('click', function(){ download('normal', inputs.text.value || 'tag'); setTimeout(function(){ download('urgent', inputs.text.value || 'tag'); }, 200); });
-    inputs.downloadBatch.addEventListener('click', downloadZip);
-    inputs.reset.addEventListener('click', resetDefaults);
-
-    // ---- Init ----
-    resetDefaults();
+      // Init
+      draw();
+    })();
   </script>
 </body>
 </html>
