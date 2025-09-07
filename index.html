@@ -204,7 +204,14 @@ LAFD 067"></textarea>
       batch:q('batch'), downloadOne:q('downloadOne'), downloadUrgent:q('downloadUrgent'), downloadBoth:q('downloadBoth'), downloadBatch:q('downloadBatch'), reset:q('reset')
     };
 
-    function measure(text,size,weight,family,ctx){ ctx.font=`${weight} ${size}px ${family}`; const w=Math.ceil(ctx.measureText(text).width); const h=Math.ceil(size*1.2); return {w,h}; }
+    function measure(text,size,weight,family,ctx){
+      // Zorg dat metingen niet beïnvloed worden door eerdere schaal/transforms
+      if(ctx.setTransform) ctx.setTransform(1,0,0,1,0,0);
+      ctx.font=`${weight} ${size}px ${family}`;
+      const w=Math.ceil(ctx.measureText(text).width);
+      const h=Math.ceil(size*1.2);
+      return {w,h};
+    }
 
     function setupCanvas(canvas, w, h, DPR){ canvas.width=Math.max(1,Math.floor(w*DPR)); canvas.height=Math.max(1,Math.floor(h*DPR)); canvas.style.width=Math.round(w)+'px'; canvas.style.height=Math.round(h)+'px'; }
 
@@ -235,13 +242,19 @@ LAFD 067"></textarea>
       const weight=inputs.weight.value; const family=inputs.font.value;
 
       const ctx=ctxs[kind];
-      ctx.reset?.();
+      // Reset transform vóór meten, anders krijg je misgeschaalde metrics
+      if(ctx.setTransform) ctx.setTransform(1,0,0,1,0,0);
       const {w:textW,h:textH}=measure(text,size,weight,family,ctx);
       const w=textW + padX*2 + stroke*2; const h=textH + padY*2 + stroke*2;
-      setupCanvas(canvases[kind], w, h, DPR);
-      ctx.scale(DPR,DPR); ctx.clearRect(0,0,w,h);
 
-      // Background
+      setupCanvas(canvases[kind], w, h, DPR);
+
+      // Clear in device pixels en stel daarna de schaal in
+      if(ctx.setTransform) ctx.setTransform(1,0,0,1,0,0);
+      ctx.clearRect(0,0,canvases[kind].width, canvases[kind].height);
+      if(ctx.setTransform) ctx.setTransform(DPR,0,0,DPR,0,0);
+
+      // Achtergrond
       if(!inputs.transparentBg.checked){
         if(kind==='urgent'){
           const start=inputs.gradStart.value||'#ff2d2d';
@@ -261,37 +274,49 @@ LAFD 067"></textarea>
         }
       }
 
-      // Border
+      // Rand
       if(stroke>0){ ctx.strokeStyle=inputs.strokeColor.value||'#1E90FF'; ctx.lineWidth=stroke; roundRectPath(ctx, stroke/2, stroke/2, w-stroke, h-stroke, radius); ctx.stroke(); }
 
-      // Text
+      // Tekst gecentreerd
       ctx.font=`${weight} ${size}px ${family}`; ctx.textBaseline='middle'; ctx.fillStyle=inputs.textColor.value||'#fff';
       const cx=(w/2), cy=(h/2);
-      ctx.fillText(text, cx - textW/2 + (stroke/2), cy);
+      ctx.fillText(text, Math.round(cx - textW/2 + (stroke/2)), Math.round(cy));
 
       return {w,h};
     }
 
     function renderAll(animT=0){ renderOne('normal', animT); renderOne('urgent', animT); }
 
-    function downloadCanvas(which, name){ const safe=(name||'tag').replace(/[^a-z0-9-_]+/gi,'_'); const url=canvases[which].toDataURL('image/png'); const a=document.createElement('a'); a.href=url; a.download = which==='urgent'? `${safe}__spoed.png` : `${safe}__normaal.png`; a.click(); setTimeout(()=>URL.revokeObjectURL(url), 2500); }
+    function downloadCanvas(which, name){
+      const safe=(name||'tag').replace(/[^a-z0-9-_]+/gi,'_');
+      const url=canvases[which].toDataURL('image/png');
+      const filename = which==='urgent'? `${safe}__spoed.png` : `${safe}__normaal.png`;
+      const a=document.createElement('a'); a.href=url; a.download=filename; a.style.display='none'; document.body.appendChild(a); a.click(); a.remove();
+    }
 
     async function downloadBatch(){
       const lines=(inputs.batch.value||'').split(/
 ?
 /).map(s=>s.trim()).filter(Boolean);
-      if(!lines.length){ downloadCanvas('normal', (inputs.text.value||'tag')); downloadCanvas('urgent', (inputs.text.value||'tag')); return; }
+      if(!lines.length){
+        downloadCanvas('normal', (inputs.text.value||'tag'));
+        downloadCanvas('urgent', (inputs.text.value||'tag'));
+        return;
+      }
       const zip=new JSZip();
       for(const line of lines){
         inputs.text.value=line; renderAll(0);
         const base=(line||'tag').replace(/[^a-z0-9-_]+/gi,'_');
-        // normaal
-        let dataURL=canvases.normal.toDataURL('image/png'); zip.file(`${base}__normaal.png`, dataURL.split(',')[1], {base64:true});
-        // spoed
-        dataURL=canvases.urgent.toDataURL('image/png'); zip.file(`${base}__spoed.png`, dataURL.split(',')[1], {base64:true});
+        const normalData=canvases.normal.toDataURL('image/png').split(',')[1];
+        const urgentData=canvases.urgent.toDataURL('image/png').split(',')[1];
+        zip.file(`${base}__normaal.png`, normalData, {base64:true});
+        zip.file(`${base}__spoed.png`, urgentData, {base64:true});
       }
       renderAll(0);
-      const blob=await zip.generateAsync({type:'blob'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='cad-tags.zip'; a.click(); setTimeout(()=>URL.revokeObjectURL(url),4000);
+      const blob=await zip.generateAsync({type:'blob'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a'); a.href=url; a.download='cad-tags.zip'; a.style.display='none'; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),4000);
     }
 
     function resetDefaults(){
