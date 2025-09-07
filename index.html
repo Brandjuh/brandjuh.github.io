@@ -188,135 +188,172 @@ LAFD 067"></textarea>
 
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script>
-    // Helpers
-    function roundRectPath(ctx,x,y,w,h,r){ const rr=Math.max(0,Math.min(r,Math.min(w,h)/2)); ctx.beginPath(); ctx.moveTo(x+rr,y); ctx.arcTo(x+w,y,x+w,y+h,rr); ctx.arcTo(x+w,y+h,x,y+h,rr); ctx.arcTo(x,y+h,x,y,rr); ctx.arcTo(x,y,x+w,y,rr); ctx.closePath(); }
-    const q=(id)=>document.getElementById(id);
-
-    // Canvases
-    const canvases={ normal:q('canvasNormal'), urgent:q('canvasUrgent') };
-    const ctxs={ normal:canvases.normal.getContext('2d'), urgent:canvases.urgent.getContext('2d') };
-
-    const inputs={
-      text:q('text'), uppercase:q('uppercase'), font:q('font'), weight:q('weight'), size:q('size'),
-      padX:q('padX'), padY:q('padY'), textColor:q('textColor'), strokeColor:q('strokeColor'), stroke:q('stroke'),
-      bgColor:q('bgColor'), bgAlpha:q('bgAlpha'), radius:q('radius'), transparentBg:q('transparentBg'),
-      gradStart:q('gradStart'), gradEnd:q('gradEnd'), gradAngle:q('gradAngle'), gradAnimate:q('gradAnimate'), gradSpeed:q('gradSpeed'),
-      batch:q('batch'), downloadOne:q('downloadOne'), downloadUrgent:q('downloadUrgent'), downloadBoth:q('downloadBoth'), downloadBatch:q('downloadBatch'), reset:q('reset')
-    };
-
-    function measure(text,size,weight,family,ctx){
-      // Zorg dat metingen niet beïnvloed worden door eerdere schaal/transforms
-      if(ctx.setTransform) ctx.setTransform(1,0,0,1,0,0);
-      ctx.font=`${weight} ${size}px ${family}`;
-      const w=Math.ceil(ctx.measureText(text).width);
-      const h=Math.ceil(size*1.2);
-      return {w,h};
+    // ---- Utilities ----
+    function $(id){ return document.getElementById(id); }
+    function clamp(n,min,max){ n=+n; if(isNaN(n)) n=min; return Math.max(min, Math.min(max, n)); }
+    function roundRectPath(ctx, x, y, w, h, r){
+      r = Math.max(0, Math.min(r, Math.min(w,h)/2));
+      ctx.beginPath();
+      ctx.moveTo(x+r, y);
+      ctx.arcTo(x+w, y,   x+w, y+h, r);
+      ctx.arcTo(x+w, y+h, x,   y+h, r);
+      ctx.arcTo(x,   y+h, x,   y,   r);
+      ctx.arcTo(x,   y,   x+w, y,   r);
+      ctx.closePath();
     }
 
-    function setupCanvas(canvas, w, h, DPR){ canvas.width=Math.max(1,Math.floor(w*DPR)); canvas.height=Math.max(1,Math.floor(h*DPR)); canvas.style.width=Math.round(w)+'px'; canvas.style.height=Math.round(h)+'px'; }
+    // ---- Grab DOM ----
+    var cvsNormal = $('canvasNormal');
+    var cvsUrgent = $('canvasUrgent');
+    var ctxNormal = cvsNormal.getContext('2d');
+    var ctxUrgent = cvsUrgent.getContext('2d');
 
-    function makeLinearGradient(ctx, x, y, w, h, angleDeg, start, end, t=0){
-      const rad=(angleDeg%360)*Math.PI/180; // basis
-      // animatie-offset t: laat een extra tussenstop meebewegen
-      const cx=x+w/2, cy=y+h/2; const r=Math.sqrt((w*w)+(h*h))/2; // halve diagonaal
-      const x0=cx - Math.cos(rad)*r, y0=cy - Math.sin(rad)*r;
-      const x1=cx + Math.cos(rad)*r, y1=cy + Math.sin(rad)*r;
-      const g=ctx.createLinearGradient(x0,y0,x1,y1);
-      // drie stops voor een vloeiend, "bewegend" effect in preview
-      const mid=Math.max(0,Math.min(1,t));
-      g.addColorStop(0, start);
-      g.addColorStop(mid, end);
-      g.addColorStop(1, start);
+    var inputs = {
+      text: $('text'), uppercase: $('uppercase'), font: $('font'), weight: $('weight'), size: $('size'),
+      padX: $('padX'), padY: $('padY'), textColor: $('textColor'), strokeColor: $('strokeColor'), stroke: $('stroke'),
+      bgColor: $('bgColor'), bgAlpha: $('bgAlpha'), radius: $('radius'), transparentBg: $('transparentBg'),
+      gradStart: $('gradStart'), gradEnd: $('gradEnd'), gradAngle: $('gradAngle'),
+      batch: $('batch'), downloadOne: $('downloadOne'), downloadUrgent: $('downloadUrgent'), downloadBoth: $('downloadBoth'), downloadBatch: $('downloadBatch'), reset: $('reset')
+    };
+
+    // ---- Core render ----
+    function measure(ctx, text, font){
+      ctx.save();
+      ctx.setTransform(1,0,0,1,0,0); // ensure neutral for accurate metrics
+      ctx.font = font;
+      var w = Math.ceil(ctx.measureText(text).width);
+      var h = Math.ceil(parseInt(font,10) * 1.2);
+      ctx.restore();
+      return {w:w, h:h};
+    }
+
+    function compute(){
+      var raw = (inputs.text.value || 'LAFD 021').trim();
+      var text = inputs.uppercase.checked ? raw.toUpperCase() : raw;
+      var size = clamp(inputs.size.value, 8, 200);
+      var padX = clamp(inputs.padX.value, 0, 200);
+      var padY = clamp(inputs.padY.value, 0, 200);
+      var stroke = clamp(inputs.stroke.value, 0, 40);
+      var radius = clamp(inputs.radius.value, 0, 60);
+      var weight = inputs.weight.value + '';
+      var family = inputs.font.value + '';
+      var font = weight + ' ' + size + 'px ' + family;
+      return { text:text, size:size, padX:padX, padY:padY, stroke:stroke, radius:radius, weight:weight, family:family, font:font };
+    }
+
+    function setupCanvas(canvas, w, h, dpr){
+      // Setting width/height properties resets the context state (safer than setTransform juggling)
+      canvas.width  = Math.max(1, Math.floor(w * dpr));
+      canvas.height = Math.max(1, Math.floor(h * dpr));
+      canvas.style.width  = Math.round(w) + 'px';
+      canvas.style.height = Math.round(h) + 'px';
+    }
+
+    function makeLinearGradient(ctx, x, y, w, h, angleDeg, c0, c1){
+      var rad = (angleDeg % 360) * Math.PI/180;
+      var cx = x + w/2, cy = y + h/2;
+      var r = Math.sqrt(w*w + h*h)/2;
+      var x0 = cx - Math.cos(rad)*r, y0 = cy - Math.sin(rad)*r;
+      var x1 = cx + Math.cos(rad)*r, y1 = cy + Math.sin(rad)*r;
+      var g = ctx.createLinearGradient(x0,y0,x1,y1);
+      g.addColorStop(0, c0);
+      g.addColorStop(1, c1);
       return g;
     }
 
-    function renderOne(kind, animT=0){
-      const DPR=Math.max(2, Math.floor(window.devicePixelRatio||1));
-      const textRaw=(inputs.text.value||'LAFD 021').trim();
-      const text=inputs.uppercase.checked?textRaw.toUpperCase():textRaw;
-      const size=Math.max(8,+inputs.size.value||48);
-      const padX=Math.max(0,+inputs.padX.value||28);
-      const padY=Math.max(0,+inputs.padY.value||16);
-      const radius=Math.max(0,+inputs.radius.value||12);
-      const stroke=Math.max(0,+inputs.stroke.value||3);
-      const weight=inputs.weight.value; const family=inputs.font.value;
+    function drawOne(which){
+      var p = compute();
+      var ctx = which === 'urgent' ? ctxUrgent : ctxNormal;
+      var dpr = Math.max(1, Math.round(window.devicePixelRatio || 1));
 
-      const ctx=ctxs[kind];
-      // Reset transform vóór meten, anders krijg je misgeschaalde metrics
-      if(ctx.setTransform) ctx.setTransform(1,0,0,1,0,0);
-      const {w:textW,h:textH}=measure(text,size,weight,family,ctx);
-      const w=textW + padX*2 + stroke*2; const h=textH + padY*2 + stroke*2;
+      // measure text at neutral transform
+      var m = measure(ctx, p.text, p.font);
+      var w = m.w + p.padX*2 + p.stroke*2;
+      var h = m.h + p.padY*2 + p.stroke*2;
 
-      setupCanvas(canvases[kind], w, h, DPR);
+      setupCanvas(which === 'urgent' ? cvsUrgent : cvsNormal, w, h, dpr);
 
-      // Clear in device pixels en stel daarna de schaal in
-      if(ctx.setTransform) ctx.setTransform(1,0,0,1,0,0);
-      ctx.clearRect(0,0,canvases[kind].width, canvases[kind].height);
-      if(ctx.setTransform) ctx.setTransform(DPR,0,0,DPR,0,0);
+      ctx.setTransform(1,0,0,1,0,0);
+      ctx.clearRect(0,0,ctx.canvas.width, ctx.canvas.height);
+      ctx.scale(dpr, dpr);
 
-      // Achtergrond
+      // background
       if(!inputs.transparentBg.checked){
-        if(kind==='urgent'){
-          const start=inputs.gradStart.value||'#ff2d2d';
-          const end=inputs.gradEnd.value||'#ffd500';
-          const angle=+inputs.gradAngle.value||0;
-          const alpha=Math.min(1,Math.max(0, parseFloat(inputs.bgAlpha.value)||0.75));
-          ctx.globalAlpha=alpha;
-          ctx.fillStyle=makeLinearGradient(ctx, stroke/2, stroke/2, w-stroke, h-stroke, angle, start, end, animT);
-          roundRectPath(ctx, stroke/2, stroke/2, w-stroke, h-stroke, radius);
-          ctx.fill(); ctx.globalAlpha=1;
+        if(which === 'urgent'){
+          var start = inputs.gradStart.value || '#ff2d2d';
+          var end   = inputs.gradEnd.value   || '#ffd500';
+          var angle = parseFloat(inputs.gradAngle.value) || 0;
+          var alpha = clamp(parseFloat(inputs.bgAlpha.value)||0.75, 0, 1);
+          ctx.globalAlpha = alpha;
+          ctx.fillStyle = makeLinearGradient(ctx, p.stroke/2, p.stroke/2, w - p.stroke, h - p.stroke, angle, start, end);
+          roundRectPath(ctx, p.stroke/2, p.stroke/2, w - p.stroke, h - p.stroke, p.radius);
+          ctx.fill();
+          ctx.globalAlpha = 1;
         } else {
-          const bg=inputs.bgColor.value||'#0B1736';
-          const alpha=Math.min(1,Math.max(0, parseFloat(inputs.bgAlpha.value)||0.75));
-          ctx.globalAlpha=alpha; ctx.fillStyle=bg;
-          roundRectPath(ctx, stroke/2, stroke/2, w-stroke, h-stroke, radius);
-          ctx.fill(); ctx.globalAlpha=1;
+          var bg = inputs.bgColor.value || '#0B1736';
+          var a2 = clamp(parseFloat(inputs.bgAlpha.value)||0.75, 0, 1);
+          ctx.globalAlpha = a2;
+          ctx.fillStyle = bg;
+          roundRectPath(ctx, p.stroke/2, p.stroke/2, w - p.stroke, h - p.stroke, p.radius);
+          ctx.fill();
+          ctx.globalAlpha = 1;
         }
       }
 
-      // Rand
-      if(stroke>0){ ctx.strokeStyle=inputs.strokeColor.value||'#1E90FF'; ctx.lineWidth=stroke; roundRectPath(ctx, stroke/2, stroke/2, w-stroke, h-stroke, radius); ctx.stroke(); }
+      // border
+      if(p.stroke > 0){
+        ctx.strokeStyle = inputs.strokeColor.value || '#1E90FF';
+        ctx.lineWidth = p.stroke;
+        roundRectPath(ctx, p.stroke/2, p.stroke/2, w - p.stroke, h - p.stroke, p.radius);
+        ctx.stroke();
+      }
 
-      // Tekst gecentreerd
-      ctx.font=`${weight} ${size}px ${family}`; ctx.textBaseline='middle'; ctx.fillStyle=inputs.textColor.value||'#fff';
-      const cx=(w/2), cy=(h/2);
-      ctx.fillText(text, Math.round(cx - textW/2 + (stroke/2)), Math.round(cy));
-
-      return {w,h};
+      // text
+      ctx.font = p.font;
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = inputs.textColor.value || '#fff';
+      var cx = w/2, cy = h/2;
+      ctx.fillText(p.text, Math.round(cx - m.w/2 + (p.stroke/2)), Math.round(cy));
     }
 
-    function renderAll(animT=0){ renderOne('normal', animT); renderOne('urgent', animT); }
+    function drawAll(){ drawOne('normal'); drawOne('urgent'); }
 
-    function downloadCanvas(which, name){
-      const safe=(name||'tag').replace(/[^a-z0-9-_]+/gi,'_');
-      const url=canvases[which].toDataURL('image/png');
-      const filename = which==='urgent'? `${safe}__spoed.png` : `${safe}__normaal.png`;
-      const a=document.createElement('a'); a.href=url; a.download=filename; a.style.display='none'; document.body.appendChild(a); a.click(); a.remove();
+    function safeName(s){ return (s || 'tag').replace(/[^a-z0-9-_]+/gi,'_'); }
+
+    function download(which, base){
+      var name = safeName(base);
+      var canvas = which === 'urgent' ? cvsUrgent : cvsNormal;
+      var url = canvas.toDataURL('image/png');
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = which === 'urgent' ? (name + '__spoed.png') : (name + '__normaal.png');
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
     }
 
-    async function downloadBatch(){
-      const lines=(inputs.batch.value||'').split(/
+    async function downloadZip(){
+      var lines = (inputs.batch.value || '').split(/
 ?
-/).map(s=>s.trim()).filter(Boolean);
+/).map(function(s){return s.trim();}).filter(Boolean);
       if(!lines.length){
-        downloadCanvas('normal', (inputs.text.value||'tag'));
-        downloadCanvas('urgent', (inputs.text.value||'tag'));
+        download('normal', inputs.text.value || 'tag');
+        download('urgent', inputs.text.value || 'tag');
         return;
       }
-      const zip=new JSZip();
-      for(const line of lines){
-        inputs.text.value=line; renderAll(0);
-        const base=(line||'tag').replace(/[^a-z0-9-_]+/gi,'_');
-        const normalData=canvases.normal.toDataURL('image/png').split(',')[1];
-        const urgentData=canvases.urgent.toDataURL('image/png').split(',')[1];
-        zip.file(`${base}__normaal.png`, normalData, {base64:true});
-        zip.file(`${base}__spoed.png`, urgentData, {base64:true});
+      var zip = new JSZip();
+      for(var i=0;i<lines.length;i++){
+        inputs.text.value = lines[i];
+        drawAll();
+        var base = safeName(lines[i]);
+        zip.file(base + '__normaal.png', cvsNormal.toDataURL('image/png').split(',')[1], {base64:true});
+        zip.file(base + '__spoed.png',   cvsUrgent.toDataURL('image/png').split(',')[1], {base64:true});
       }
-      renderAll(0);
-      const blob=await zip.generateAsync({type:'blob'});
-      const url=URL.createObjectURL(blob);
-      const a=document.createElement('a'); a.href=url; a.download='cad-tags.zip'; a.style.display='none'; document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(()=>URL.revokeObjectURL(url),4000);
+      drawAll();
+      var blob = await zip.generateAsync({type:'blob'});
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a'); a.href=url; a.download='cad-tags.zip'; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
     }
 
     function resetDefaults(){
@@ -324,23 +361,25 @@ LAFD 067"></textarea>
       inputs.size.value=48; inputs.padX.value=28; inputs.padY.value=16; inputs.radius.value=12;
       inputs.textColor.value='#ffffff'; inputs.strokeColor.value='#1E90FF'; inputs.stroke.value=3;
       inputs.bgColor.value='#0B1736'; inputs.bgAlpha.value=0.75; inputs.transparentBg.checked=false;
-      inputs.gradStart.value='#ff2d2d'; inputs.gradEnd.value='#ffd500'; inputs.gradAngle.value=0; inputs.gradAnimate.checked=true; inputs.gradSpeed.value=1.2;
-      inputs.batch.value=''; renderAll(0);
+      inputs.gradStart.value='#ff2d2d'; inputs.gradEnd.value='#ffd500'; inputs.gradAngle.value=0;
+      inputs.batch.value='';
+      drawAll();
     }
 
-    // Listeners
-    ['input','change'].forEach(evt=>{ Object.values(inputs).forEach(el=>{ if(el&&el.addEventListener) el.addEventListener(evt, ()=>renderAll(0), {passive:true}); }); });
-    inputs.downloadOne.addEventListener('click', ()=> downloadCanvas('normal', inputs.text.value||'tag'));
-    inputs.downloadUrgent.addEventListener('click', ()=> downloadCanvas('urgent', inputs.text.value||'tag'));
-    inputs.downloadBoth.addEventListener('click', ()=>{ downloadCanvas('normal', inputs.text.value||'tag'); setTimeout(()=>downloadCanvas('urgent', inputs.text.value||'tag'), 200); });
-    inputs.downloadBatch.addEventListener('click', downloadBatch);
+    // ---- Wire up events (no optional chaining, broad compatibility) ----
+    var liveInputs = ['text','uppercase','font','weight','size','padX','padY','textColor','strokeColor','stroke','bgColor','bgAlpha','radius','transparentBg','gradStart','gradEnd','gradAngle'];
+    for(var i=0;i<liveInputs.length;i++){
+      var el = inputs[liveInputs[i]];
+      if(el){ el.addEventListener('input', drawAll); el.addEventListener('change', drawAll); }
+    }
+    inputs.downloadOne.addEventListener('click', function(){ download('normal', inputs.text.value || 'tag'); });
+    inputs.downloadUrgent.addEventListener('click', function(){ download('urgent', inputs.text.value || 'tag'); });
+    inputs.downloadBoth.addEventListener('click', function(){ download('normal', inputs.text.value || 'tag'); setTimeout(function(){ download('urgent', inputs.text.value || 'tag'); }, 200); });
+    inputs.downloadBatch.addEventListener('click', downloadZip);
     inputs.reset.addEventListener('click', resetDefaults);
 
-    // Animatie-loop voor spoedvoorbeeld
-    let t=0, last=0;
-    function loop(ts){ if(!last) last=ts; const dt=(ts-last)/1000; last=ts; const speed=Math.max(0.1, Math.min(5, parseFloat(inputs.gradSpeed.value)||1.2)); if(inputs.gradAnimate.checked){ t+=dt*speed; const phase=(Math.sin(t)+1)/2; renderAll(phase); } else { renderAll(0.5); } requestAnimationFrame(loop); }
-
-    resetDefaults(); requestAnimationFrame(loop);
+    // ---- Init ----
+    resetDefaults();
   </script>
 </body>
 </html>
